@@ -116,6 +116,41 @@ Používáme následující vzorec:
 
 ---
 
+## 🚀 Spuštění na lokálním počítači
+
+### Požadavky
+- Python 3.8+
+- pip
+
+### Instalace a spuštění
+
+1. **Naklonujte repozitář:**
+```bash
+git clone git@github.com:xhusar2/mapa_prilezitosti.git
+cd mapa_prilezitosti
+```
+
+2. **Nainstalujte závislosti:**
+```bash
+pip install -r requirements.txt
+```
+
+3. **Spusťte aplikaci:**
+```bash
+streamlit run Data.py
+```
+
+4. **Otevřete prohlížeč:**
+Aplikace se automaticky otevře v prohlížeči na `http://localhost:8501`
+
+### Použité technologie
+- **Streamlit** – webový framework pro datové aplikace
+- **Pandas** – zpracování dat
+- **Plotly** – interaktivní vizualizace
+- **ecomplexity** – výpočet ekonomické komplexity
+
+---
+
 ## 📍 O projektu
 
 Tato metodologie je součástí aplikace **Mapa příležitostí**, jejímž cílem je zviditelnit příležitosti českého exportu v kontextu zelené transformace.
