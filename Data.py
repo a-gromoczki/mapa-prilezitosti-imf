@@ -22,51 +22,51 @@ col2.subheader("Nastavení grafu")
 # Sidebar: Year selection
 year = col2.radio("Rok", ["2022", "2023"], index=1,horizontal=True)
 topsubcol2 = col2.container()
-def USDtoCZKdefault(year):
+def USDtoEURdefault(year):
     if year == "2022":
-        return 23.360
+        return 0.95
     elif year == "2023":
-        return 22.21
+        return 0.93
 
 @st.cache_resource
 def load_data(datayear):
-    USD_to_czk = USDtoCZKdefault(datayear)
+    USD_to_eur = USDtoEURdefault(datayear)
     taxonomy = pd.read_csv("BACI_analysis/outputs/PlnaDatabaze3.0.csv")
-    CZE = pd.read_csv('BACI_analysis/outputs/CZE_' + datayear + '.csv')
-    GreenProducts = taxonomy.merge(CZE, how='left', left_on='HS_ID', right_on='prod')
+    SVK = pd.read_csv('BACI_analysis/outputs/SVK_' + datayear + '.csv')
+    GreenProducts = taxonomy.merge(SVK, how='left', left_on='HS_ID', right_on='prod')
        
     df = GreenProducts.rename(columns={
-        'ExportValue': 'Český export ' + datayear + ' CZK',
-        'export_Rank': 'Pořadí Česka na světovém trhu ' + datayear,
+        'ExportValue': 'Slovenský export ' + datayear + ' EUR',
+        'export_Rank': 'Pořadí Slovenska na světovém trhu ' + datayear,
         'pci': 'Komplexita výrobku (unikátnost) ' + datayear,
-        'relatedness': 'Příbuznost CZ ' + datayear,
+        'relatedness': 'Příbuznost SVK ' + datayear,
         'PCI_Rank': 'Žebříček komplexity ' + datayear,
         'PCI_Percentile': 'Percentil komplexity ' + datayear,
         'relatedness_Rank': 'Žebříček příbuznosti' + datayear,
         'relatedness_Percentile': 'Percentil příbuznosti ' + datayear,
-        'WorldExport': 'Velikost světového trhu ' + datayear + ' CZK',
+        'WorldExport': 'Velikost světového trhu ' + datayear + ' EUR',
         'EUWorldMarketShare': 'EU Světový Podíl ' + datayear + ' %',
         'euhhi': 'Koncentrace evropského exportu ' + datayear,
         'hhi': 'Koncentrace světového trhu ' + datayear,
-        'CZE_WorldMarketShare': 'Podíl Česka na světovém trhu ' + datayear + ' %',
-        'CZE_EUMarketShare': 'CZ-EU Podíl ' + datayear + ' %',
+        'SVK_WorldMarketShare': 'Podíl Slovenska na světovém trhu ' + datayear + ' %',
+        'SVK_EUMarketShare': 'SVK-EU Podíl ' + datayear + ' %',
         'rca': 'RCA ' + datayear,
         'EUTopExporter': 'EU Největší Exportér ' + datayear,
         'CZ_Nazev': 'Název',
     })
     df = df[df.Included == "IN"]
-    df['CZ-EU Podíl ' + datayear + ' %'] = 100 * df['CZ-EU Podíl ' + datayear + ' %']
+    df['SVK-EU Podíl ' + datayear + ' %'] = 100 * df['SVK-EU Podíl ' + datayear + ' %']
     df['EU Světový Podíl ' + datayear + ' %'] = 100 * df['EU Světový Podíl ' + datayear + ' %']
-    df['Podíl Česka na světovém trhu ' + datayear + ' %'] = 100 * df['Podíl Česka na světovém trhu ' + datayear + ' %']
-    df['Český export ' + datayear + ' USD'] = df['Český export ' + datayear + ' CZK']
-    df['Český export ' + datayear + ' CZK'] = USD_to_czk * df['Český export ' + datayear + ' CZK']
-    df['Velikost světového trhu ' + datayear + ' USD'] = df['Velikost světového trhu ' + datayear + ' CZK']
-    df['Velikost světového trhu ' + datayear + ' CZK'] = USD_to_czk * df['Velikost světového trhu ' + datayear + ' CZK']
+    df['Podíl Slovenska na světovém trhu ' + datayear + ' %'] = 100 * df['Podíl Slovenska na světovém trhu ' + datayear + ' %']
+    df['Slovenský export ' + datayear + ' USD'] = df['Slovenský export ' + datayear + ' EUR']
+    df['Slovenský export ' + datayear + ' EUR'] = USD_to_eur * df['Slovenský export ' + datayear + ' EUR']
+    df['Velikost světového trhu ' + datayear + ' USD'] = df['Velikost světového trhu ' + datayear + ' EUR']
+    df['Velikost světového trhu ' + datayear + ' EUR'] = USD_to_eur * df['Velikost světového trhu ' + datayear + ' EUR']
     df['Kód výrobku HS6'] = df['HS_ID'].astype(str)
     df['HS_Lookup'] = df['Kód výrobku HS6'] + " - " + df['Název']
-    total_cz_export = USD_to_czk * CZE['ExportValue'].sum()
-    total_cz_green_export = df['Český export ' + datayear + ' CZK'].sum()
-    return df, total_cz_export, total_cz_green_export
+    total_svk_export = USD_to_eur * SVK['ExportValue'].sum()
+    total_svk_green_export = df['Slovenský export ' + datayear + ' EUR'].sum()
+    return df, total_svk_export, total_svk_green_export
 
 # Define the default year_placeholder and get plotting lists
 year_placeholder = " ‎"
@@ -78,16 +78,16 @@ y_axis = col2.selectbox("Vyber osu Y:", plot_display_names, index=1)
 markersize = col2.selectbox("Velikost dle:", plot_display_names, index=4)
 
 # Load datasets for both years
-df_2022, cz_export_22, cz_green_export_22 = load_data("2022")
-df_2023, cz_export_23, cz_green_export_23 = load_data("2023")
+df_2022, svk_export_22, svk_green_export_22 = load_data("2022")
+df_2023, svk_export_23, svk_green_export_23 = load_data("2023")
 if year == "2022":
     df = df_2022
-    cz_total_export = cz_export_22
-    cz_total_green_export = cz_export_22
+    svk_total_export = svk_export_22
+    svk_total_green_export = svk_export_22
 else:
     df = df_2023
-    cz_total_export = cz_export_23
-    cz_total_green_export = cz_export_23
+    svk_total_export = svk_export_23
+    svk_total_green_export = svk_export_23
 
 # Initialize the session state for filtering by groups
 if 'filtrovat_dle_skupin' not in st.session_state:
@@ -200,11 +200,11 @@ bottom_text = "Analýza je založená na obchodních datech UN COMTRADE, která 
 if st.session_state.filtrovat_dle_skupin is False:
     if HS_select == []:
         chart_js = chartjs_plot(filtered_df, markersize, hover_data, color, x_axis, y_axis, year,
-                                  chart_title="České zelené příležitosti", bottom_text=bottom_text)
+                                  chart_title="Slovenské zelené príležitosti", bottom_text=bottom_text)
     else:
         chart_js = chartjs_plot(filtered_df[filtered_df['HS_Lookup'].isin(HS_select)],
                                   markersize, hover_data, color, x_axis, y_axis, year,
-                                  chart_title="České zelené příležitosti", bottom_text=bottom_text)
+                                  chart_title="Slovenské zelené príležitosti", bottom_text=bottom_text)
 elif st.session_state.filtrovat_dle_skupin is True and Skupina is None:
     chart_js = None
 elif st.session_state.filtrovat_dle_skupin is True and Skupina is not None:
@@ -222,18 +222,18 @@ with col1:
     components.html(chart_js, height=800,width=1500)
 
 # Example: render the polar area chart in a Streamlit component
-polar_js_skupiny = chart_highcharts_variable_pie(filtered_df_2022, filtered_df_2023, cz_export_22,cz_export_23,cz_green_export_22,cz_green_export_23,
+polar_js_skupiny = chart_highcharts_variable_pie(filtered_df_2022, filtered_df_2023, svk_export_22,svk_export_23,svk_green_export_22,svk_green_export_23,
                               group_field="Skupina",
-                              chart_title="Růst exportu dle skupiny",
-                              bottom_text="Šířka koláče vyjadřuje % z celkového českého exportu v roce 2023<br>Vzdálenost dílu koláče od středu vyjadřuje růst skupiny mezi lety 2022 a 2023",
-                              usd_to_czk_22=USDtoCZKdefault("2022"),
-                              usd_to_czk_23=USDtoCZKdefault("2023"))
-polar_js_kategorie = chart_highcharts_variable_pie(filtered_df_2022, filtered_df_2023, cz_export_22,cz_export_23,cz_green_export_22,cz_green_export_23,
+                              chart_title="Rast exportu podľa skupiny",
+                              bottom_text="Šírka koláča vyjadruje % z celkového slovenského exportu v roku 2023<br>Vzdialenosť dielu koláča od stredu vyjadruje rast skupiny medzi rokmi 2022 a 2023",
+                              usd_to_eur_22=USDtoEURdefault("2022"),
+                              usd_to_eur_23=USDtoEURdefault("2023"))
+polar_js_kategorie = chart_highcharts_variable_pie(filtered_df_2022, filtered_df_2023, svk_export_22,svk_export_23,svk_green_export_22,svk_green_export_23,
                               group_field="Kategorie",
-                              chart_title="Růst zeleného exportu dle kategorie",
-                              bottom_text="Šířka koláče vyjadřuje % z českého zeleného exportu v roce 2023<br>Vzdálenost dílu koláče od středu vyjadřuje růst kategorie mezi lety 2022 a 2023",
-                              usd_to_czk_22=USDtoCZKdefault("2022"),
-                              usd_to_czk_23=USDtoCZKdefault("2023"),
+                              chart_title="Rast zeleného exportu podľa kategórie",
+                              bottom_text="Šírka koláča vyjadruje % zo slovenského zeleného exportu v roku 2023<br>Vzdialenosť dielu koláča od stredu vyjadruje rast kategórie medzi rokmi 2022 a 2023",
+                              usd_to_eur_22=USDtoEURdefault("2022"),
+                              usd_to_eur_23=USDtoEURdefault("2023"),
                               relative_to_green_only=True)
 
 
@@ -246,11 +246,11 @@ if HS_select == []:
         st.components.v1.html(polar_js_kategorie, height=690,width=1500)
     st.divider()
     mcol1, mcol2, mcol3, = st.columns(3)
-    selected_CZ_growth = filtered_df_2023['Český export 2023 CZK'].sum()/USDtoCZKdefault("2023") - filtered_df_2022['Český export 2022 CZK'].sum()/USDtoCZKdefault("2022")
-    selected_CZ_growth_perc = selected_CZ_growth/(filtered_df_2022['Český export 2022 CZK'].sum()/USDtoCZKdefault("2022"))
-    mcol1.metric("Vybraný český export za rok "+year+"", "{:,.0f}".format(sum(filtered_df['Český export '+year+' CZK'])/1e9),'miliard CZK' )
-    mcol2.metric("Růst vybraného českého exportu mezi lety 2022 a 2023", "{:,.0f}".format(selected_CZ_growth/1e6), "milionů USD")
-    mcol3.metric("Růst vybraného českého exportu mezi lety 2022 a 2023", "{:,.1%}".format(selected_CZ_growth_perc), "%")
+    selected_SVK_growth = filtered_df_2023['Slovenský export 2023 EUR'].sum()/USDtoEURdefault("2023") - filtered_df_2022['Slovenský export 2022 EUR'].sum()/USDtoEURdefault("2022")
+    selected_SVK_growth_perc = selected_SVK_growth/(filtered_df_2022['Slovenský export 2022 EUR'].sum()/USDtoEURdefault("2022"))
+    mcol1.metric("Vybraný slovenský export za rok "+year+"", "{:,.0f}".format(sum(filtered_df['Slovenský export '+year+' EUR'])/1e9),'miliard EUR' )
+    mcol2.metric("Rast vybraného slovenského exportu medzi rokmi 2022 a 2023", "{:,.0f}".format(selected_SVK_growth/1e6), "miliónov USD")
+    mcol3.metric("Rast vybraného slovenského exportu medzi rokmi 2022 a 2023", "{:,.1%}".format(selected_SVK_growth_perc), "%")
 
 
 else:
@@ -258,14 +258,14 @@ else:
     lookup_year = filtered_df['HS_Lookup'].isin(HS_select)
     lookup_22 = filtered_df_2022['HS_Lookup'].isin(HS_select)
     lookup_23 = filtered_df_2023['HS_Lookup'].isin(HS_select)
-    selected_CZ_growth = filtered_df_2023[lookup_23]['Český export 2023 CZK'].sum()/USDtoCZKdefault("2023") - filtered_df_2022[lookup_22]['Český export 2022 CZK'].sum()/USDtoCZKdefault("2022")
-    selected_CZ_growth_perc = selected_CZ_growth/(filtered_df_2022[lookup_22]['Český export 2022 CZK'].sum()/USDtoCZKdefault("2022"))
-    mcol1.metric("Vybraný český export za rok "+year+"", "{:,.0f}".format(sum(filtered_df[lookup_year]['Český export '+year+' CZK'])/1e6),'milionů CZK' )
-    mcol2.metric("Růst vybraného českého exportu mezi lety 2022 a 2023", "{:,.0f}".format(selected_CZ_growth/1e6), "milionů USD")
-    mcol3.metric("Růst vybraného českého exportu mezi lety 2022 a 2023", "{:,.1%}".format(selected_CZ_growth_perc), "%")
+    selected_SVK_growth = filtered_df_2023[lookup_23]['Slovenský export 2023 EUR'].sum()/USDtoEURdefault("2023") - filtered_df_2022[lookup_22]['Slovenský export 2022 EUR'].sum()/USDtoEURdefault("2022")
+    selected_SVK_growth_perc = selected_SVK_growth/(filtered_df_2022[lookup_22]['Slovenský export 2022 EUR'].sum()/USDtoEURdefault("2022"))
+    mcol1.metric("Vybraný slovenský export za rok "+year+"", "{:,.0f}".format(sum(filtered_df[lookup_year]['Slovenský export '+year+' EUR'])/1e6),'miliónov EUR' )
+    mcol2.metric("Rast vybraného slovenského exportu medzi rokmi 2022 a 2023", "{:,.0f}".format(selected_SVK_growth/1e6), "miliónov USD")
+    mcol3.metric("Rast vybraného slovenského exportu medzi rokmi 2022 a 2023", "{:,.1%}".format(selected_SVK_growth_perc), "%")
 
-total_CZ_growth = cz_export_23/USDtoCZKdefault("2023") - cz_export_22/USDtoCZKdefault("2022")
-total_CZ_growth_perc = total_CZ_growth/(cz_export_22/USDtoCZKdefault("2022"))
-mcol1.metric("Celkový český export za rok "+year+"", "{:,.0f}".format(cz_total_export/1e9),'miliard CZK' )
-mcol2.metric("Růst celkového českého exportu mezi lety 2022 a 2023", "{:,.0f}".format(total_CZ_growth/1e9), "miliard USD")
-mcol3.metric("Růst celkového českého exportu mezi lety 2022 a 2023", "{:,.1%}".format(total_CZ_growth_perc), "%")
+total_SVK_growth = svk_export_23/USDtoEURdefault("2023") - svk_export_22/USDtoEURdefault("2022")
+total_SVK_growth_perc = total_SVK_growth/(svk_export_22/USDtoEURdefault("2022"))
+mcol1.metric("Celkový slovenský export za rok "+year+"", "{:,.0f}".format(svk_total_export/1e9),'miliard EUR' )
+mcol2.metric("Rast celkového slovenského exportu medzi rokmi 2022 a 2023", "{:,.0f}".format(total_SVK_growth/1e9), "miliard USD")
+mcol3.metric("Rast celkového slovenského exportu medzi rokmi 2022 a 2023", "{:,.1%}".format(total_SVK_growth_perc), "%")

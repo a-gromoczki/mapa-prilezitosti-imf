@@ -2,13 +2,13 @@ def get_plot_and_hover_display_names(year_placeholder):
     plot_display_names = [
         'Percentil příbuznosti '+year_placeholder+'',
         'Percentil komplexity '+year_placeholder+'',
-        'Pořadí Česka na světovém trhu '+year_placeholder+'',
+        'Pořadí Slovenska na světovém trhu '+year_placeholder+'',
         'Komplexita výrobku (unikátnost) '+year_placeholder+'',
-        'Český export '+year_placeholder+' CZK',
-        'Český export '+year_placeholder+' USD',
-        'Velikost světového trhu '+year_placeholder+' CZK',
+        'Slovenský export '+year_placeholder+' EUR',
+        'Slovenský export '+year_placeholder+' USD',
+        'Velikost světového trhu '+year_placeholder+' EUR',
         'Velikost světového trhu '+year_placeholder+' USD',
-        'Podíl Česka na světovém trhu '+year_placeholder+' %',
+        'Podíl Slovenska na světovém trhu '+year_placeholder+' %',
         'Koncentrace světového trhu '+year_placeholder+'',
         'Koncentrace evropského exportu '+year_placeholder+'',
     ]
@@ -18,15 +18,15 @@ def get_plot_and_hover_display_names(year_placeholder):
         'Skupina',
         'Podskupina',
         'Název',
-        'Příbuznost CZ '+year_placeholder+'',
+        'Příbuznost SVK '+year_placeholder+'',
         'EU Největší Exportér '+year_placeholder+'',
         'Komplexita výrobku (unikátnost) '+year_placeholder+'',
-        'Český export '+year_placeholder+' CZK',
-        'Český export '+year_placeholder+' USD',
-        'Pořadí Česka na světovém trhu '+year_placeholder+'',
-        'Velikost světového trhu '+year_placeholder+' CZK',
+        'Slovenský export '+year_placeholder+' EUR',
+        'Slovenský export '+year_placeholder+' USD',
+        'Pořadí Slovenska na světovém trhu '+year_placeholder+'',
+        'Velikost světového trhu '+year_placeholder+' EUR',
         'Velikost světového trhu '+year_placeholder+' USD',
-        'Podíl Česka na světovém trhu '+year_placeholder+' %',
+        'Podíl Slovenska na světovém trhu '+year_placeholder+' %',
         'Percentil příbuznosti '+year_placeholder+'',
         'Percentil komplexity '+year_placeholder+'',
         'Koncentrace světového trhu '+year_placeholder+'',
@@ -39,19 +39,19 @@ def get_plot_and_hover_display_names(year_placeholder):
 
 def get_hover_formatting(year):
     no_decimal = [
-        'CZ Celkový Export 25-30 CZK',
-        'Český export '+year+' CZK',
-        'Český export '+year+' USD',
-        'Velikost světového trhu '+year+' CZK',
+        'SVK Celkový Export 25-30 EUR',
+        'Slovenský export '+year+' EUR',
+        'Slovenský export '+year+' USD',
+        'Velikost světového trhu '+year+' EUR',
         'Velikost světového trhu '+year+' USD',
         'Percentil příbuznosti '+year+'',
         'Percentil komplexity '+year+'',
-        'Pořadí Česka na světovém trhu '+year+''
+        'Pořadí Slovenska na světovém trhu '+year+''
     ]
     
     # Columns requiring three significant figures and percentage formatting
     two_sigfig = [
-        'Příbuznost CZ '+year+'',
+        'Příbuznost SVK '+year+'',
         'RCA '+year+'',
         'Koncentrace světového trhu '+year+'',
         'Koncentrace evropského exportu '+year+'',
@@ -60,7 +60,7 @@ def get_hover_formatting(year):
     
     # Columns that should show as percentages
     percentage = [
-        'Podíl Česka na světovém trhu '+year+' %',
+        'Podíl Slovenska na světovém trhu '+year+' %',
     ]
     
     texthover = [
