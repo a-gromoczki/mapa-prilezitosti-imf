@@ -7,24 +7,13 @@ from mapatools.variable_names import get_hover_formatting
 def chartjs_plot(filtered_df, markersize, hover_data, color, x_axis, y_axis, year,chart_title="Chart Title",bottom_text="Bottom Text"):
     # Define the consistent color palette
     color_palette = [
-        "#002651",  # dark blue
-        "#FF5555",  # red
         "#1CC08F",  # green/teal
         "#33D3E9",  # cyan
         "#205CF7",  # blue
         "#A379FD",  # purple
         "#ED4FDD",  # pink/magenta
         "#FF976A",  # orange
-        "#FEC04C",  # yellow
-        "#FF9090",  # light red 
-        "#8EE0C7",  # light green/teal
-        "#2F61C3",  # medium blue
-        "#D1BCFE",  # light purple
-        "#99E9F4",  # light cyan
-        "#F6A7EE",  # light pink
-        "#90AEFB",  # light blue
-        "#FFCBB5",  # light orange
-        "#FFE0A6"   # light yellow
+        "#FEC04C"   # yellow
     ]
     
     # Create a consistent color mapping for categories
@@ -134,8 +123,7 @@ def chartjs_plot(filtered_df, markersize, hover_data, color, x_axis, y_axis, yea
 
         // --- Optional: Add original color back if needed post-JSON parsing ---
         // Not strictly necessary if we use the _originalBackgroundColor added above
-        Chart.defaults.font.family = 'Arial, sans-serif';
-        Chart.defaults.color = '#002651';
+        Chart.defaults.font.family = 'Montserrat, sans-serif';
         var myBubbleChart = new Chart(ctx, {{
             type: 'bubble',
             data: {{
@@ -149,24 +137,8 @@ def chartjs_plot(filtered_df, markersize, hover_data, color, x_axis, y_axis, yea
                     padding: 0
                 }},
                 scales: {{
-                    x: {{ 
-                        title: {{ 
-                            display: true, 
-                            text: {x_label},
-                            color: '#002651',
-                            font: {{ family: 'Arial, sans-serif' }}
-                        }},
-                        ticks: {{ color: '#002651', font: {{ family: 'Arial, sans-serif' }} }}
-                    }},
-                    y: {{ 
-                        title: {{ 
-                            display: true, 
-                            text: {y_label},
-                            color: '#002651',
-                            font: {{ family: 'Arial, sans-serif' }}
-                        }},
-                        ticks: {{ color: '#002651', font: {{ family: 'Arial, sans-serif' }} }}
-                    }}
+                    x: {{ title: {{ display: true, text: {x_label} }} }},
+                    y: {{ title: {{ display: true, text: {y_label} }} }}
                 }},
                 animation: {{ duration: 500 }}, // Disable default animations if hover is jerky
                 transitions: {{
@@ -207,10 +179,8 @@ def chartjs_plot(filtered_df, markersize, hover_data, color, x_axis, y_axis, yea
                     title: {{
                         display: true,
                         text: {json.dumps(chart_title)},
-                        color: '#002651',
                         font: {{
-                            family: 'Arial, sans-serif',
-                            size: 25
+                        size: 25
                         }}
                     }},
                     subtitle: {{
@@ -220,9 +190,7 @@ def chartjs_plot(filtered_df, markersize, hover_data, color, x_axis, y_axis, yea
                         padding: {{
                             top: 10
                         }},
-                        color: '#002651',
                         font: {{
-                            family: 'Arial, sans-serif',
                             size: 14
                         }}
                     }},
@@ -257,12 +225,7 @@ def chartjs_plot(filtered_df, markersize, hover_data, color, x_axis, y_axis, yea
                             }}
                             chart.update();
                         }},
-                        labels: {{ 
-                            usePointStyle: true, 
-                            padding: 10,
-                            color: '#002651',
-                            font: {{ family: 'Arial, sans-serif' }}
-                        }}
+                        labels: {{ usePointStyle: true, padding: 10 }}
                     }},
                     tooltip: {{
                         // Use callbacks for custom tooltip content

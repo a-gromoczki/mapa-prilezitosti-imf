@@ -1,36 +1,36 @@
 def get_plot_and_hover_display_names(year_placeholder):
     plot_display_names = [
-        'Percentil příbuznosti '+year_placeholder+'',
+        'Percentil príbuznosti '+year_placeholder+'',
         'Percentil komplexity '+year_placeholder+'',
-        'Pořadí Slovenska na světovém trhu '+year_placeholder+'',
-        'Komplexita výrobku (unikátnost) '+year_placeholder+'',
+        'Poradie Slovenska na svetovom trhu '+year_placeholder+'',
+        'Komplexita výrobku (unikátnosť) '+year_placeholder+'',
         'Slovenský export '+year_placeholder+' EUR',
         'Slovenský export '+year_placeholder+' USD',
-        'Velikost světového trhu '+year_placeholder+' EUR',
-        'Velikost světového trhu '+year_placeholder+' USD',
-        'Podíl Slovenska na světovém trhu '+year_placeholder+' %',
-        'Koncentrace světového trhu '+year_placeholder+'',
-        'Koncentrace evropského exportu '+year_placeholder+'',
+        'Veľkosť svetového trhu '+year_placeholder+' EUR',
+        'Veľkosť svetového trhu '+year_placeholder+' USD',
+        'Podiel Slovenska na svetovom trhu '+year_placeholder+' %',
+        'Koncentrácia svetového trhu '+year_placeholder+'',
+        'Koncentrácia európskeho exportu '+year_placeholder+'',
     ]
 
     hover_display_data = [
         'Kód výrobku HS6',
         'Skupina',
         'Podskupina',
-        'Název',
-        'Příbuznost SVK '+year_placeholder+'',
-        'EU Největší Exportér '+year_placeholder+'',
-        'Komplexita výrobku (unikátnost) '+year_placeholder+'',
+        'Názov',
+        'Príbuznosť SVK '+year_placeholder+'',
+        'EÚ Najväčší Exportér '+year_placeholder+'',
+        'Komplexita výrobku (unikátnosť) '+year_placeholder+'',
         'Slovenský export '+year_placeholder+' EUR',
         'Slovenský export '+year_placeholder+' USD',
-        'Pořadí Slovenska na světovém trhu '+year_placeholder+'',
-        'Velikost světového trhu '+year_placeholder+' EUR',
-        'Velikost světového trhu '+year_placeholder+' USD',
-        'Podíl Slovenska na světovém trhu '+year_placeholder+' %',
-        'Percentil příbuznosti '+year_placeholder+'',
+        'Poradie Slovenska na svetovom trhu '+year_placeholder+'',
+        'Veľkosť svetového trhu '+year_placeholder+' EUR',
+        'Veľkosť svetového trhu '+year_placeholder+' USD',
+        'Podiel Slovenska na svetovom trhu '+year_placeholder+' %',
+        'Percentil príbuznosti '+year_placeholder+'',
         'Percentil komplexity '+year_placeholder+'',
-        'Koncentrace světového trhu '+year_placeholder+'',
-        'Koncentrace evropského exportu '+year_placeholder+'',
+        'Koncentrácia svetového trhu '+year_placeholder+'',
+        'Koncentrácia európskeho exportu '+year_placeholder+'',
         'RCA '+year_placeholder+'',
 
     ]
@@ -42,33 +42,33 @@ def get_hover_formatting(year):
         'SVK Celkový Export 25-30 EUR',
         'Slovenský export '+year+' EUR',
         'Slovenský export '+year+' USD',
-        'Velikost světového trhu '+year+' EUR',
-        'Velikost světového trhu '+year+' USD',
-        'Percentil příbuznosti '+year+'',
+        'Veľkosť svetového trhu '+year+' EUR',
+        'Veľkosť svetového trhu '+year+' USD',
+        'Percentil príbuznosti '+year+'',
         'Percentil komplexity '+year+'',
-        'Pořadí Slovenska na světovém trhu '+year+''
+        'Poradie Slovenska na svetovom trhu '+year+''
     ]
     
     # Columns requiring three significant figures and percentage formatting
     two_sigfig = [
-        'Příbuznost SVK '+year+'',
+        'Príbuznosť SVK '+year+'',
         'RCA '+year+'',
-        'Koncentrace světového trhu '+year+'',
-        'Koncentrace evropského exportu '+year+'',
-        'Komplexita výrobku (unikátnost) '+year+'',
+        'Koncentrácia svetového trhu '+year+'',
+        'Koncentrácia európskeho exportu '+year+'',
+        'Komplexita výrobku (unikátnosť) '+year+'',
     ]
     
     # Columns that should show as percentages
     percentage = [
-        'Podíl Slovenska na světovém trhu '+year+' %',
+        'Podiel Slovenska na svetovom trhu '+year+' %',
     ]
     
     texthover = [
         'Skupina',
         'Podskupina',
-        'Název',
+        'Názov',
         'Kód výrobku HS6',
-        'EU Největší Exportér '+year+''
+        'EÚ Najväčší Exportér '+year+''
     ]
     return no_decimal,two_sigfig,percentage,texthover
 
@@ -98,6 +98,6 @@ def get_hover_data(year,year_placeholder,hover_info,x_axis,y_axis,markersize):
     hover_data.setdefault(y_axis, False)
     hover_data.setdefault('Skupina', False)
     hover_data.setdefault('Podskupina', False)
-    hover_data.setdefault('Název', True)
+    hover_data.setdefault('Názov', True)
 
     return hover_data
