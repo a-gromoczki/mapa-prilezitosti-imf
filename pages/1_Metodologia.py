@@ -3,7 +3,7 @@ from mapatools.visualsetup import load_visual_identity
 import os
 # Page config
 st.set_page_config(
-    page_title="Mapa Příležitostí",
+    page_title="Mapa Príležitostí",
     page_icon="resources/favicon.ico",
     layout="wide"
 )
