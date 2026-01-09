@@ -9,7 +9,7 @@ from mapatools.visualsetup import load_visual_identity
 
 st.set_page_config(
     page_title="Mapa Príležitostí",
-    page_icon="resources/logo_notext.svg",
+    page_icon="resources/imf_favicon.ico",
     layout="wide"
 )
 # Loading custom CSS and identity assets
