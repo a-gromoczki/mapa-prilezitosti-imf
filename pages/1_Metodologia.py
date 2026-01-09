@@ -4,7 +4,7 @@ import os
 # Page config
 st.set_page_config(
     page_title="Mapa Príležitostí",
-    page_icon="resources/favicon.ico",
+    page_icon="resources/imf_favicon.ico",
     layout="wide"
 )
 # Load custom branding
