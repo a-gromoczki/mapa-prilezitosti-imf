@@ -1,14 +1,22 @@
 import json
 
-def chart_highcharts_variable_pie(filtered_df_2022, filtered_df_2023,
-                                  total_export_22, total_export_23,
-                                  green_total_22, green_total_23,
-                                  group_field,
-                                  usd_to_eur_22=0.95,
-                                  usd_to_eur_23=0.93,
-                                  chart_title="Rast exportu medzi rokmi 2022 a 2023",
-                                  bottom_text="Data: UN COMTRADE, CEPII, a ďalšie",
-                                  relative_to_green_only=False):
+
+def chart_highcharts_variable_pie(
+    filtered_df_2022,
+    filtered_df_2023,
+    total_export_22,
+    total_export_23,
+    green_total_22,
+    green_total_23,
+    group_field,
+    usd_to_eur_22=0.95,
+    usd_to_eur_23=0.93,
+    chart_title="Rast exportu medzi rokmi 2022 a 2023",
+    bottom_text="Data: UN COMTRADE, CEPII, a ďalšie",
+    relative_to_green_only=False,
+    year_22="2022",
+    year_23="2023",
+):
     """
     Creates a Highcharts variable pie chart showing green export growth.
     Includes both filtered green categories and (optionally) non-green and unclassified green.
@@ -18,12 +26,16 @@ def chart_highcharts_variable_pie(filtered_df_2022, filtered_df_2023,
     """
 
     # Base green export totals from filtered subset and convert to USD
-    total_export_22 = total_export_22/usd_to_eur_22
-    total_export_23 = total_export_23/usd_to_eur_23
-    green_total_22 = green_total_22/usd_to_eur_22
-    green_total_23 = green_total_23/usd_to_eur_23
-    green_total_22_filtered = filtered_df_2022['Slovenský export 2022 EUR'].sum()/usd_to_eur_22
-    green_total_23_filtered = filtered_df_2023['Slovenský export 2023 EUR'].sum()/usd_to_eur_23
+    total_export_22 = total_export_22 / usd_to_eur_22
+    total_export_23 = total_export_23 / usd_to_eur_23
+    green_total_22 = green_total_22 / usd_to_eur_22
+    green_total_23 = green_total_23 / usd_to_eur_23
+    green_total_22_filtered = (
+        filtered_df_2022[f"Slovenský export {year_22} EUR"].sum() / usd_to_eur_22
+    )
+    green_total_23_filtered = (
+        filtered_df_2023[f"Slovenský export {year_23} EUR"].sum() / usd_to_eur_23
+    )
 
     # Compute unfiltered other-green portion
     other_green_22 = green_total_22 - green_total_22_filtered
@@ -67,11 +79,25 @@ def chart_highcharts_variable_pie(filtered_df_2022, filtered_df_2023,
         })
 
     # Add each filtered green category
-    green_cats = sorted(set(filtered_df_2022[group_field]) | set(filtered_df_2023[group_field]))
+    green_cats = sorted(
+        set(filtered_df_2022[group_field]) | set(filtered_df_2023[group_field])
+    )
 
     for cat in green_cats:
-        export_22 = filtered_df_2022.loc[filtered_df_2022[group_field] == cat, 'Slovenský export 2022 EUR'].sum() / usd_to_eur_22
-        export_23 = filtered_df_2023.loc[filtered_df_2023[group_field] == cat, 'Slovenský export 2023 EUR'].sum() / usd_to_eur_23
+        export_22 = (
+            filtered_df_2022.loc[
+                filtered_df_2022[group_field] == cat,
+                f"Slovenský export {year_22} EUR",
+            ].sum()
+            / usd_to_eur_22
+        )
+        export_23 = (
+            filtered_df_2023.loc[
+                filtered_df_2023[group_field] == cat,
+                f"Slovenský export {year_23} EUR",
+            ].sum()
+            / usd_to_eur_23
+        )
         growth = (export_23 - export_22) / export_22 if export_22 > 0 else 0
 
         # Get color from either dataset (prefer 2023, fallback to 2022)
@@ -79,17 +105,21 @@ def chart_highcharts_variable_pie(filtered_df_2022, filtered_df_2023,
         color_2022 = filtered_df_2022.loc[filtered_df_2022[group_field] == cat, "Barva " + group_field]
         color = color_2023.iloc[0] if not color_2023.empty else (color_2022.iloc[0] if not color_2022.empty else "#000000")
 
-        data_series.append({
-            "name": cat,
-            "y": export_23 / denominator,
-            "z": growth,
-            "color": color,
-            "export22": export_22 / 1e9,
-            "export23": export_23 / 1e9,
-            "growth_abs": (export_23 - export_22) / 1e9,
-            "growth_frac": 100 * growth
-        })
-    sorted_data_series = sorted(data_series, key=lambda item: float(item['z']), reverse=True)
+        data_series.append(
+            {
+                "name": cat,
+                "y": export_23 / denominator,
+                "z": growth,
+                "color": color,
+                "export22": export_22 / 1e9,
+                "export23": export_23 / 1e9,
+                "growth_abs": (export_23 - export_22) / 1e9,
+                "growth_frac": 100 * growth,
+            }
+        )
+    sorted_data_series = sorted(
+        data_series, key=lambda item: float(item["z"]), reverse=True
+    )
 
 
     # Highcharts config
@@ -121,15 +151,15 @@ def chart_highcharts_variable_pie(filtered_df_2022, filtered_df_2023,
         "tooltip": {
             "headerFormat": "",
             "pointFormat": (
-                '<span style="color:{point.color}">\u25CF</span> <b>{point.name}</b><br/>' +
-                'Export 2022: {point.export22:,.1f} miliárd USD<br/>' +
-                'Export 2023: {point.export23:,.1f} miliárd USD<br/>' +
-                'Rast: {point.growth_abs:,.1f} miliárd USD ({point.growth_frac:.2f}%)'
+                '<span style="color:{point.color}">\u25CF</span> <b>{point.name}</b><br/>'
+                f"Export {year_22}: {{point.export22:,.1f}} miliárd USD<br/>"
+                f"Export {year_23}: {{point.export23:,.1f}} miliárd USD<br/>"
+                "Rast: {point.growth_abs:,.1f} miliárd USD ({point.growth_frac:.2f}%)"
             ),
             "style": {
                 "fontFamily": "Arial, sans-serif",
-                "color": "#002651"
-            }
+                "color": "#002651",
+            },
         },
         "legend": {
             "itemStyle": {
@@ -153,13 +183,14 @@ def chart_highcharts_variable_pie(filtered_df_2022, filtered_df_2023,
 
     chart_html = f"""
     <div id="container" style="width: 100%; height: 700px;"></div>
-    <script src="https://code.highcharts.com/highcharts.js"></script>
-    <script src="https://code.highcharts.com/modules/variable-pie.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11/highcharts.js"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', function () {{
-        Highcharts.chart('container', {config_json});
-      }});
+      var chartConfig = {config_json};
+      function initVariablePieChart() {{
+        Highcharts.chart('container', chartConfig);
+      }}
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11/modules/variable-pie.js" onload="initVariablePieChart()"></script>
     """
 
     return chart_html

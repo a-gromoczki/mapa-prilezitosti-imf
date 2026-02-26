@@ -1,11 +1,43 @@
 import streamlit as st
 import pandas as pd
+from pathlib import Path
 
 from mapatools.chartjsbubble import chartjs_plot
 from mapatools.highchartpolararea import chart_highcharts_variable_pie
 from mapatools.variable_names import get_plot_and_hover_display_names, get_hover_data
 import streamlit.components.v1 as components
 from mapatools.visualsetup import load_visual_identity
+
+DATA_DIR = Path("BACI_analysis/outputs")
+
+
+def available_years():
+    years = []
+    for f in DATA_DIR.glob("SVK_*.csv"):
+        stem = f.stem  # e.g. "SVK_2023"
+        parts = stem.split("_")
+        if len(parts) == 2 and parts[1].isdigit():
+            years.append(parts[1])
+    return sorted(set(years))
+
+
+FX_USD_EUR = {
+    "2022": 0.95,
+    "2023": 0.93,
+    "2024": 0.92,
+}
+
+
+def USDtoEURdefault(year):
+    if year in FX_USD_EUR:
+        return FX_USD_EUR[year]
+    # Fallback – use last known FX
+    return list(FX_USD_EUR.values())[-1]
+
+
+YEARS = available_years()
+if not YEARS:
+    raise RuntimeError("No SVK_YYYY.csv files found in BACI_analysis/outputs.")
 
 st.set_page_config(
     page_title="Mapa Príležitostí",
@@ -20,13 +52,8 @@ col2.subheader("")
 col2.subheader("Nastavenia grafu")
 
 # Sidebar: Year selection
-year = col2.radio("Rok", ["2022", "2023"], index=1,horizontal=True)
+year = col2.radio("Rok", YEARS, index=len(YEARS) - 1, horizontal=True)
 topsubcol2 = col2.container()
-def USDtoEURdefault(year):
-    if year == "2022":
-        return 0.95
-    elif year == "2023":
-        return 0.93
 
 @st.cache_resource
 def load_data(datayear):
@@ -68,6 +95,19 @@ def load_data(datayear):
     total_svk_green_export = df['Slovenský export ' + datayear + ' EUR'].sum()
     return df, total_svk_export, total_svk_green_export
 
+
+def load_all_years(years):
+    dfs = {}
+    total_exports = {}
+    total_green_exports = {}
+    for y in years:
+        df_y, total_y, green_total_y = load_data(y)
+        dfs[y] = df_y
+        total_exports[y] = total_y
+        total_green_exports[y] = green_total_y
+    return dfs, total_exports, total_green_exports
+
+
 # Define the default year_placeholder and get plotting lists
 year_placeholder = " ‎"
 plot_display_names, hover_display_data = get_plot_and_hover_display_names(year_placeholder)
@@ -77,17 +117,11 @@ x_axis = col2.selectbox("Vyber osu X:", plot_display_names, index=0)
 y_axis = col2.selectbox("Vyber osu Y:", plot_display_names, index=1)
 markersize = col2.selectbox("Veľkosť podľa:", plot_display_names, index=4)
 
-# Load datasets for both years
-df_2022, svk_export_22, svk_green_export_22 = load_data("2022")
-df_2023, svk_export_23, svk_green_export_23 = load_data("2023")
-if year == "2022":
-    df = df_2022
-    svk_total_export = svk_export_22
-    svk_total_green_export = svk_export_22
-else:
-    df = df_2023
-    svk_total_export = svk_export_23
-    svk_total_green_export = svk_export_23
+# Load datasets for all available years
+dfs_by_year, total_export_by_year, green_export_by_year = load_all_years(YEARS)
+df = dfs_by_year[year]
+svk_total_export = total_export_by_year[year]
+svk_total_green_export = green_export_by_year[year]
 
 # Initialize the session state for filtering by groups
 if 'filtrovat_dle_skupin' not in st.session_state:
@@ -103,7 +137,7 @@ if st.session_state.filtrovat_dle_skupin:
     col2.markdown("**Aktuálne zobrazenie:** 🧩 Jednotlivé skupiny")
     color = 'Kategorie'
     # Use the current year's dataframe for group options.
-    cur_df = df_2022 if year == "2022" else df_2023
+    cur_df = dfs_by_year[year]
     skupiny = cur_df['Skupina'].unique()
     Skupina = col2.segmented_control('Skupina', skupiny, default=skupiny[5])
 else:
@@ -144,10 +178,12 @@ def apply_filters(df, year_str, x_axis, y_axis, color, markersize):
 if 'filters' not in st.session_state:
     st.session_state.filters = []
 
-# Calculate filtered data for both years
-filtered_df_2022 = apply_filters(df_2022, "2022", x_axis, y_axis, color, markersize)
-filtered_df_2023 = apply_filters(df_2023, "2023", x_axis, y_axis, color, markersize)
-filtered_df = filtered_df_2022 if year == "2022" else filtered_df_2023
+# Calculate filtered data for all years
+filtered_by_year = {
+    y: apply_filters(dfs_by_year[y], y, x_axis, y_axis, color, markersize)
+    for y in YEARS
+}
+filtered_df = filtered_by_year[year]
 
 # Filter control buttons
 subcol1, subcol2 = col2.columns(2)
@@ -221,51 +257,142 @@ html_bytes = chart_js
 with col1:
     components.html(chart_js, height=800,width=1500)
 
-# Example: render the polar area chart in a Streamlit component
-polar_js_skupiny = chart_highcharts_variable_pie(filtered_df_2022, filtered_df_2023, svk_export_22,svk_export_23,svk_green_export_22,svk_green_export_23,
-                              group_field="Skupina",
-                              chart_title="Rast exportu podľa skupiny",
-                              bottom_text="Šírka koláča vyjadruje % z celkového slovenského exportu v roku 2023<br>Vzdialenosť dielu koláča od stredu vyjadruje rast skupiny medzi rokmi 2022 a 2023",
-                              usd_to_eur_22=USDtoEURdefault("2022"),
-                              usd_to_eur_23=USDtoEURdefault("2023"))
-polar_js_kategorie = chart_highcharts_variable_pie(filtered_df_2022, filtered_df_2023, svk_export_22,svk_export_23,svk_green_export_22,svk_green_export_23,
-                              group_field="Kategorie",
-                              chart_title="Rast zeleného exportu podľa kategórie",
-                              bottom_text="Šírka koláča vyjadruje % zo slovenského zeleného exportu v roku 2023<br>Vzdialenosť dielu koláča od stredu vyjadruje rast kategórie medzi rokmi 2022 a 2023",
-                              usd_to_eur_22=USDtoEURdefault("2022"),
-                              usd_to_eur_23=USDtoEURdefault("2023"),
-                              relative_to_green_only=True)
-
-
-# Comparison columns - now you can compare metrics between 2022 and 2023
-if HS_select == []:
-    pie1,pie2 = st.columns(2)
-    with pie1:
-        st.components.v1.html(polar_js_skupiny, height=690,width=1500)
-    with pie2:
-        st.components.v1.html(polar_js_kategorie, height=690,width=1500)
-    st.divider()
-    mcol1, mcol2, mcol3, = st.columns(3)
-    selected_SVK_growth = filtered_df_2023['Slovenský export 2023 EUR'].sum()/USDtoEURdefault("2023") - filtered_df_2022['Slovenský export 2022 EUR'].sum()/USDtoEURdefault("2022")
-    selected_SVK_growth_perc = selected_SVK_growth/(filtered_df_2022['Slovenský export 2022 EUR'].sum()/USDtoEURdefault("2022"))
-    mcol1.metric("Vybraný slovenský export za rok "+year+"", "{:,.0f}".format(sum(filtered_df['Slovenský export '+year+' EUR'])/1e9),'miliard EUR' )
-    mcol2.metric("Rast vybraného slovenského exportu medzi rokmi 2022 a 2023", "{:,.0f}".format(selected_SVK_growth/1e6), "miliónov USD")
-    mcol3.metric("Rast vybraného slovenského exportu medzi rokmi 2022 a 2023", "{:,.1%}".format(selected_SVK_growth_perc), "%")
-
-
+# Determine previous and current years for comparative views
+if len(YEARS) >= 2:
+    prev_year, curr_year = YEARS[-2], YEARS[-1]
 else:
-    mcol1, mcol2, mcol3, = st.columns(3)
-    lookup_year = filtered_df['HS_Lookup'].isin(HS_select)
-    lookup_22 = filtered_df_2022['HS_Lookup'].isin(HS_select)
-    lookup_23 = filtered_df_2023['HS_Lookup'].isin(HS_select)
-    selected_SVK_growth = filtered_df_2023[lookup_23]['Slovenský export 2023 EUR'].sum()/USDtoEURdefault("2023") - filtered_df_2022[lookup_22]['Slovenský export 2022 EUR'].sum()/USDtoEURdefault("2022")
-    selected_SVK_growth_perc = selected_SVK_growth/(filtered_df_2022[lookup_22]['Slovenský export 2022 EUR'].sum()/USDtoEURdefault("2022"))
-    mcol1.metric("Vybraný slovenský export za rok "+year+"", "{:,.0f}".format(sum(filtered_df[lookup_year]['Slovenský export '+year+' EUR'])/1e6),'miliónov EUR' )
-    mcol2.metric("Rast vybraného slovenského exportu medzi rokmi 2022 a 2023", "{:,.0f}".format(selected_SVK_growth/1e6), "miliónov USD")
-    mcol3.metric("Rast vybraného slovenského exportu medzi rokmi 2022 a 2023", "{:,.1%}".format(selected_SVK_growth_perc), "%")
+    prev_year = curr_year = YEARS[-1]
 
-total_SVK_growth = svk_export_23/USDtoEURdefault("2023") - svk_export_22/USDtoEURdefault("2022")
-total_SVK_growth_perc = total_SVK_growth/(svk_export_22/USDtoEURdefault("2022"))
-mcol1.metric("Celkový slovenský export za rok "+year+"", "{:,.0f}".format(svk_total_export/1e9),'miliard EUR' )
-mcol2.metric("Rast celkového slovenského exportu medzi rokmi 2022 a 2023", "{:,.0f}".format(total_SVK_growth/1e9), "miliard USD")
-mcol3.metric("Rast celkového slovenského exportu medzi rokmi 2022 a 2023", "{:,.1%}".format(total_SVK_growth_perc), "%")
+filtered_prev = filtered_by_year[prev_year]
+filtered_curr = filtered_by_year[curr_year]
+
+svk_export_prev = total_export_by_year[prev_year]
+svk_export_curr = total_export_by_year[curr_year]
+svk_green_export_prev = green_export_by_year[prev_year]
+svk_green_export_curr = green_export_by_year[curr_year]
+
+# Example: render the polar area chart in a Streamlit component
+polar_js_skupiny = chart_highcharts_variable_pie(
+    filtered_prev,
+    filtered_curr,
+    svk_export_prev,
+    svk_export_curr,
+    svk_green_export_prev,
+    svk_green_export_curr,
+    group_field="Skupina",
+    chart_title="Rast exportu podľa skupiny",
+    bottom_text=(
+        f"Šírka koláča vyjadruje % z celkového slovenského exportu v roku {curr_year}<br>"
+        f"Vzdialenosť dielu koláča od stredu vyjadruje rast skupiny medzi rokmi {prev_year} a {curr_year}"
+    ),
+    usd_to_eur_22=USDtoEURdefault(prev_year),
+    usd_to_eur_23=USDtoEURdefault(curr_year),
+    year_22=prev_year,
+    year_23=curr_year,
+)
+polar_js_kategorie = chart_highcharts_variable_pie(
+    filtered_prev,
+    filtered_curr,
+    svk_export_prev,
+    svk_export_curr,
+    svk_green_export_prev,
+    svk_green_export_curr,
+    group_field="Kategorie",
+    chart_title="Rast zeleného exportu podľa kategórie",
+    bottom_text=(
+        f"Šírka koláča vyjadruje % zo slovenského zeleného exportu v roku {curr_year}<br>"
+        f"Vzdialenosť dielu koláča od stredu vyjadruje rast kategórie medzi rokmi {prev_year} a {curr_year}"
+    ),
+    usd_to_eur_22=USDtoEURdefault(prev_year),
+    usd_to_eur_23=USDtoEURdefault(curr_year),
+    relative_to_green_only=True,
+    year_22=prev_year,
+    year_23=curr_year,
+)
+
+# Comparison columns - now you can compare metrics between prev_year and curr_year
+if HS_select == []:
+    pie1, pie2 = st.columns(2)
+    with pie1:
+        st.components.v1.html(polar_js_skupiny, height=690, width=1500)
+    with pie2:
+        st.components.v1.html(polar_js_kategorie, height=690, width=1500)
+    st.divider()
+    mcol1, mcol2, mcol3 = st.columns(3)
+    selected_SVK_growth = (
+        filtered_curr[f"Slovenský export {curr_year} EUR"].sum() / USDtoEURdefault(curr_year)
+        - filtered_prev[f"Slovenský export {prev_year} EUR"].sum() / USDtoEURdefault(prev_year)
+    )
+    selected_SVK_growth_perc = selected_SVK_growth / (
+        filtered_prev[f"Slovenský export {prev_year} EUR"].sum() / USDtoEURdefault(prev_year)
+    )
+    mcol1.metric(
+        f"Vybraný slovenský export za rok {year}",
+        "{:,.0f}".format(sum(filtered_df[f"Slovenský export {year} EUR"]) / 1e9),
+        "miliard EUR",
+    )
+    mcol2.metric(
+        f"Rast vybraného slovenského exportu medzi rokmi {prev_year} a {curr_year}",
+        "{:,.0f}".format(selected_SVK_growth / 1e6),
+        "miliónov USD",
+    )
+    mcol3.metric(
+        f"Rast vybraného slovenského exportu medzi rokmi {prev_year} a {curr_year}",
+        "{:,.1%}".format(selected_SVK_growth_perc),
+        "%",
+    )
+else:
+    mcol1, mcol2, mcol3 = st.columns(3)
+    lookup_year = filtered_df["HS_Lookup"].isin(HS_select)
+    lookup_prev = filtered_prev["HS_Lookup"].isin(HS_select)
+    lookup_curr = filtered_curr["HS_Lookup"].isin(HS_select)
+    selected_SVK_growth = (
+        filtered_curr[lookup_curr][f"Slovenský export {curr_year} EUR"].sum()
+        / USDtoEURdefault(curr_year)
+        - filtered_prev[lookup_prev][f"Slovenský export {prev_year} EUR"].sum()
+        / USDtoEURdefault(prev_year)
+    )
+    selected_SVK_growth_perc = selected_SVK_growth / (
+        filtered_prev[lookup_prev][f"Slovenský export {prev_year} EUR"].sum()
+        / USDtoEURdefault(prev_year)
+    )
+    mcol1.metric(
+        f"Vybraný slovenský export za rok {year}",
+        "{:,.0f}".format(
+            sum(filtered_df[lookup_year][f"Slovenský export {year} EUR"]) / 1e6
+        ),
+        "miliónov EUR",
+    )
+    mcol2.metric(
+        f"Rast vybraného slovenského exportu medzi rokmi {prev_year} a {curr_year}",
+        "{:,.0f}".format(selected_SVK_growth / 1e6),
+        "miliónov USD",
+    )
+    mcol3.metric(
+        f"Rast vybraného slovenského exportu medzi rokmi {prev_year} a {curr_year}",
+        "{:,.1%}".format(selected_SVK_growth_perc),
+        "%",
+    )
+
+total_SVK_growth = (
+    svk_export_curr / USDtoEURdefault(curr_year)
+    - svk_export_prev / USDtoEURdefault(prev_year)
+)
+total_SVK_growth_perc = total_SVK_growth / (
+    svk_export_prev / USDtoEURdefault(prev_year)
+)
+mcol1.metric(
+    f"Celkový slovenský export za rok {year}",
+    "{:,.0f}".format(svk_total_export / 1e9),
+    "miliard EUR",
+)
+mcol2.metric(
+    f"Rast celkového slovenského exportu medzi rokmi {prev_year} a {curr_year}",
+    "{:,.0f}".format(total_SVK_growth / 1e9),
+    "miliard USD",
+)
+mcol3.metric(
+    f"Rast celkového slovenského exportu medzi rokmi {prev_year} a {curr_year}",
+    "{:,.1%}".format(total_SVK_growth_perc),
+    "%",
+)
