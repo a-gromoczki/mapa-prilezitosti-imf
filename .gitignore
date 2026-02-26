@@ -1,6 +1,7 @@
 **/metadata/**
 **/__pycache__/**
 venv/*
+.venv/*
 
 BACI_analysis/BACI_HS22_Y2023_V202501.csv
 .DS_Store
